@@ -86,6 +86,7 @@ def prompt_user(
     clear_console()
     for word_set in words:
         for i, word in enumerate(word_set):
-            print(f'{f'[{i + 1}]':>6} {word}')
+            num = f'[{i + 1}]'
+            print(f'{num:>6} {word}')
         input(f'{'[=]':>6} Press enter to continue')
         clear_console()
