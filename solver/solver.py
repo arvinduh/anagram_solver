@@ -1,13 +1,5 @@
 import os
-
-
-def clear_console() -> None:
-    """
-    Clear the console.
-    :return: None
-    """
-    os.system('cls' if os.name == 'nt' else 'clear')
-
+import config
 
 def is_anagram(
     word: str,
@@ -27,10 +19,12 @@ def is_anagram(
     
     return True
 
+
 def solve(
     letters: str,
-    max_letters: int = 6,
-    dst_dir: str = './files/sorted/',
+    max_letters: int = config.DFLT_MAX_LETTERS,
+    min_letters: int = config.MIN_LENGTH,
+    dst_dir: str = config.SORTED_FILES,
 ) -> list[dict[str]] | None:
     """
     Solve the word puzzle.
@@ -38,13 +32,15 @@ def solve(
     :param dst_dir: The directory containing the word bank files.
     :return: The words that can be made from the letters.
     """
-    if len(letters) != max_letters:
-        return None
     letters = letters.lower()
 
-    words = []
-    for i in range(max_letters, 2, -1):
-        src_fn = os.path.join(dst_dir, f'{i}_letter_words.txt')
+    words = {}
+    for i in range(
+        min(max_letters, config.MAX_LENGTH),
+        max(min_letters, config.MIN_LENGTH) - 1,
+        -1
+    ):
+        src_fn = os.path.join(dst_dir, config.FN_FORMAT.format(letter_count=i))
         if not os.path.exists(src_fn):
             continue
 
@@ -52,41 +48,6 @@ def solve(
             src_words = src_file.readlines()
         
         src_words = [word.strip() for word in src_words]
-        words.append([word for word in src_words if is_anagram(word, letters)])
+        words[i] = [word for word in src_words if is_anagram(word, letters)]
     
     return words
-
-
-def prompt_user(
-    max_letters: int = 6,
-    dst_dir: str = './files/sorted/',
-) -> None:
-    """
-    Prompt the user for input and display the results.
-    :param max_letters: The maximum number of letters to use.
-    :param dst_dir: The directory containing the word bank files.
-    :return: None
-    """
-    user_in = ""
-    error = None
-    while len(user_in) != max_letters or not user_in.isalpha():
-        clear_console()
-        print(f'[=] Enter {max_letters} letters: ')
-        if error is not None:
-            print(f'[-] {error}')
-        user_in = input('[+] ').strip().lower()
-
-        if len(user_in) != max_letters:
-            error = f'Please enter {max_letters} letters.'
-        elif not user_in.isalpha():
-            error = 'Please enter only letters.'
-    
-    words = solve(user_in, max_letters, dst_dir)
-
-    clear_console()
-    for word_set in words:
-        for i, word in enumerate(word_set):
-            num = f'[{i + 1}]'
-            print(f'{num:>6} {word}')
-        input(f'{'[=]':>6} Press enter to continue')
-        clear_console()
