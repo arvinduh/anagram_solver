@@ -56,10 +56,12 @@ def prompt_user(
             'Exit (e) to exit',
             sep=f'\n{'[*]':>10} '
         )
-        user_in = input(f'{'[+]':>6} ').lower()
+        user_in = input(f'{'[+]':>6} ').strip().lower()
 
         if user_in in ['p', 'prev'] and curr < longest:
             curr += 1
+        elif user_in in ['p', 'prev'] and curr == longest:
+            pass
         elif user_in.isdigit() and int(user_in) in words.keys():
             curr = int(user_in)
         elif user_in not in ['e', 'exit'] and curr > shortest:
