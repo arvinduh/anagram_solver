@@ -1,5 +1,3 @@
-from string import Template 
-
 # File structure
 SOURCE_FILES = './files/original/'
 SORTED_FILES = './files/sorted/'
