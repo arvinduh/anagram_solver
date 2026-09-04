@@ -34,6 +34,7 @@ pub mod commands;
 pub mod error;
 pub mod format;
 pub mod ingest;
+pub mod ui;
 
 /// Engine-wide constants and architectural bounds.
 pub mod constants;

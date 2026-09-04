@@ -257,11 +257,18 @@ impl Reader {
   ///
   /// Traverses the sorted-letter trie via depth-first search, using bitmask child pruning
   /// to eliminate non-existent branches in $O(1)$ CPU cycles.
-  pub fn sub_anagrams<'a>(
+  /// Traverses the sorted-letter trie via depth-first search, invoking `callback`
+  /// on each discovered word as soon as it is matched.
+  ///
+  /// Prunes non-existent branches using bitmask operations in $O(1)$ CPU cycles.
+  pub fn sub_anagrams_streaming<'a, F>(
     &'a self,
     letters: &str,
     min_len: usize,
-  ) -> Vec<&'a str> {
+    mut callback: F,
+  ) where
+    F: FnMut(&'a str),
+  {
     let mut counts = [0u8; 26];
     let mut total = 0usize;
     for &b in letters.as_bytes() {
@@ -273,31 +280,35 @@ impl Reader {
     }
 
     if total < min_len {
-      return Vec::new();
+      return;
     }
 
     let nodes = self.nodes();
     let root = match nodes.first() {
       Some(r) => r,
-      None => return Vec::new(),
+      None => return,
     };
 
-    let mut results = Vec::new();
-    self.dfs_sub_anagrams(nodes, root, 0, &mut counts, min_len, &mut results);
-    results
+    self.dfs_sub_anagrams_streaming(
+      nodes, root, 0, &mut counts, min_len, &mut callback,
+    );
   }
 
-  fn dfs_sub_anagrams<'a>(
+  fn dfs_sub_anagrams_streaming<'a, F>(
     &'a self,
     nodes: &'a [Node],
     node: &Node,
     start_letter_idx: usize,
     counts: &mut [u8; 26],
     min_len: usize,
-    results: &mut Vec<&'a str>,
-  ) {
+    callback: &mut F,
+  ) where
+    F: FnMut(&'a str),
+  {
     if node.word_count() > 0 && (node.depth as usize) >= min_len {
-      results.extend(self.words(node));
+      for word in self.words(node) {
+        callback(word);
+      }
     }
 
     let first = node.first_child.get();
@@ -315,13 +326,49 @@ impl Reader {
         let letter_idx = (child.letter - b'a') as usize;
         if counts[letter_idx] > 0 {
           counts[letter_idx] -= 1;
-          self.dfs_sub_anagrams(
-            nodes, child, letter_idx, counts, min_len, results,
+          self.dfs_sub_anagrams_streaming(
+            nodes, child, letter_idx, counts, min_len, callback,
           );
           counts[letter_idx] += 1;
         }
       }
     }
+  }
+
+  /// Returns all words in the database that can be formed using any subset of `letters`
+  /// with a length of at least `min_len`.
+  pub fn sub_anagrams<'a>(
+    &'a self,
+    letters: &str,
+    min_len: usize,
+  ) -> Vec<&'a str> {
+    let mut results = Vec::new();
+    self.sub_anagrams_streaming(letters, min_len, |w| results.push(w));
+    results
+  }
+
+  /// Returns all sub-anagrams grouped by word length descending, sorted alphabetically within each length.
+  pub fn sub_anagrams_grouped<'a>(
+    &'a self,
+    letters: &str,
+    min_len: usize,
+  ) -> Vec<(usize, Vec<&'a str>)> {
+    let mut buckets: [Vec<&'a str>; MAX_WORD_LEN + 1] =
+      std::array::from_fn(|_| Vec::new());
+    self.sub_anagrams_streaming(letters, min_len, |word| {
+      if word.len() <= MAX_WORD_LEN {
+        buckets[word.len()].push(word);
+      }
+    });
+
+    let mut grouped = Vec::new();
+    for len in (min_len..=MAX_WORD_LEN).rev() {
+      if !buckets[len].is_empty() {
+        buckets[len].sort_unstable();
+        grouped.push((len, std::mem::take(&mut buckets[len])));
+      }
+    }
+    grouped
   }
 }
 
@@ -524,5 +571,19 @@ mod tests {
     let mut subs4 = reader.sub_anagrams("listen", 4);
     subs4.sort_unstable();
     assert_eq!(subs4, vec!["enlist", "line", "listen", "silent"]);
+
+    // Test streaming
+    let mut streamed = Vec::new();
+    reader.sub_anagrams_streaming("listen", 4, |w| streamed.push(w));
+    streamed.sort_unstable();
+    assert_eq!(streamed, vec!["enlist", "line", "listen", "silent"]);
+
+    // Test grouped
+    let grouped = reader.sub_anagrams_grouped("listen", 4);
+    assert_eq!(grouped.len(), 2); // Length 6 and Length 4
+    assert_eq!(grouped[0].0, 6);
+    assert_eq!(grouped[0].1, vec!["enlist", "listen", "silent"]);
+    assert_eq!(grouped[1].0, 4);
+    assert_eq!(grouped[1].1, vec!["line"]);
   }
 }
