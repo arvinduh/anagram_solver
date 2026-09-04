@@ -1,0 +1,40 @@
+[package]
+name = "anagram"
+version = "0.1.0"
+edition = "2024"
+description = "Anagram solver backed by a compact, zero-deserialization word database"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/arvinduh/anagram_solver"
+
+[dependencies]
+zerocopy = { version = "0.8", features = ["derive"] }
+crc32fast = "1.5"
+thiserror = "2.0"
+rayon = "1.10"
+ureq = "3.4.0"
+memmap2 = "0.9.11"
+clap = { version = "4.5", features = ["derive"] }
+
+[[bin]]
+name = "agrm"
+path = "src/main.rs"
+
+[lints.rust]
+missing_docs = "warn"
+unsafe_op_in_unsafe_fn = "warn"
+
+[lints.clippy]
+all = "warn"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
