@@ -154,6 +154,7 @@ impl Reader {
   /// Advises the OS kernel about expected page access patterns for memory-mapped databases.
   ///
   /// Has no effect if the database is backed by an in-memory owned buffer.
+  #[cfg(unix)]
   pub fn advise(&self, advice: memmap2::Advice) -> std::io::Result<()> {
     if let Storage::Mmap(ref mmap) = self.storage {
       mmap.advise(advice)?;
@@ -476,6 +477,7 @@ mod tests {
     assert!(reader_fast.validate_checksum().is_ok());
 
     // Advising kernel
+    #[cfg(unix)]
     assert!(reader.advise(memmap2::Advice::Random).is_ok());
 
     let _ = std::fs::remove_file(file_path);
