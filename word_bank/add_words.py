@@ -32,7 +32,7 @@ def add_words(
     new_words = [word.strip().lower() for word in new_words]
 
   # If dst_dir does not exist, make it
-  os.makedirs(dst_dir)
+  os.makedirs(dst_dir, exist_ok=True)
 
   # for each word length, add the new words to the existing words of that file
   for i in range(config.MIN_LENGTH, config.MAX_LENGTH + 1):
