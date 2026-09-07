@@ -168,7 +168,7 @@ def generate_summary_table(
   )
 
   pivot.drop(columns=["length"], inplace=True)
-  pivot["speedup"] = pivot[fastest] / pivot[slowest]
+  pivot["speedup"] = pivot[slowest] / pivot[fastest]
 
   return pivot
 
