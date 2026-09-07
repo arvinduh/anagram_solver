@@ -39,9 +39,8 @@ The solver uses pre-filtered and length-bucketed word files stored in
 .\.venv\Scripts\python -m word_bank.add_words
 ```
 
-By default, this parses `./files/original/Collins Scrabble Words (2019).txt` and
-creates/updates `files/sorted/{N}_letter_words.txt` for word lengths between 3
-and 8 letters.
+By default, this parses `./files/original/words_alpha.txt` and creates/updates
+`files/sorted/{N}_letter_words.txt` for word lengths between 3 and 8 letters.
 
 ---
 
@@ -106,7 +105,8 @@ to CSV and comparing multiple engine runs (e.g., Python vs Rust).
   lengths (`cat`, `stop`, `apple`, `listen`, `roaster`, `creative`,
   `algorithms`).
 - **`benches/tests/parse.py`**: Benchmarks dictionary ingestion, bucketing, and
-  writing throughput using Collins Scrabble Words.
+  writing throughput using dwyl's
+  [english-words](https://github.com/dwyl/english-words/blob/master/words_alpha.txt).
 
 ---
 

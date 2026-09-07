@@ -61,4 +61,4 @@ def add_words(
 
 
 if __name__ == "__main__":
-  add_words("./files/original/Collins Scrabble Words (2019).txt")
+  add_words("./files/original/words_alpha.txt")

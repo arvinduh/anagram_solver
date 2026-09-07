@@ -8,9 +8,7 @@ from pytest_benchmark import fixture
 from word_bank import add_words
 
 WORD_BANKS: dict[str, pathlib.Path] = {
-  "scrabble_words": pathlib.Path(
-    "./files/original/Collins Scrabble Words (2019).txt"
-  ),
+  "dwyl_english": pathlib.Path("./files/original/words_alpha.txt"),
 }
 
 
